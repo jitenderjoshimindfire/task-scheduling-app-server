@@ -6,8 +6,12 @@ const {
   updateTask,
   deleteTask,
 } = require("../controller/taskController");
+const protectedRoutes = require('../middleware/protectedRoutes')
+
 
 const router = express.Router();
+
+router.use(protectedRoutes)
 
 router.post("/tasks", createTask);
 
