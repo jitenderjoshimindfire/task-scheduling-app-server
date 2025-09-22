@@ -1,4 +1,5 @@
 const Task = require("../model/taskModel");
+const calculateTaskFlags = require("../utils/calculateTaskFlag");
 
 const createTask = async (req, res) => {
   try {
@@ -13,7 +14,16 @@ const createTask = async (req, res) => {
 
     const creator = req.user.id;
 
-    const task = new Task({ title, description, dueDate, creator });
+    const { isOverdue, dueSoon } = calculateTaskFlags(dueDate);
+
+    const task = new Task({
+      title,
+      description,
+      dueDate,
+      creator,
+      isOverdue,
+      dueSoon,
+    });
     await task.save();
 
     res.status(201).json({
@@ -33,7 +43,6 @@ const createTask = async (req, res) => {
 const getAllTasks = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const tasks = await Task.find({ creator: userId }).sort({ dueDate: -1 });
 
     res.status(200).json({
@@ -82,9 +91,11 @@ const updateTask = async (req, res) => {
   try {
     const { title, description, dueDate } = req.body;
 
+    const { isOverdue, dueSoon } = calculateTaskFlags(dueDate);
+
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, creator: req.user.id },
-      { title, description, dueDate },
+      { title, description, dueDate, isOverdue, dueSoon },
       { new: true, runValidators: true }
     );
 
