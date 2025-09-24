@@ -4,7 +4,8 @@ const Task = require("../../model/taskModel");
 
 module.exports = (io) => {
   // Run every hour
-  cron.schedule("*/10 * * * * *", async () => {
+  cron.schedule("0 * * * *", async () => {
+     console.log("Cron job triggered");
     const now = new Date();
     const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
