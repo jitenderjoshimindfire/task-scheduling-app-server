@@ -1,19 +1,29 @@
 const Task = require("../model/taskModel");
 const calculateTaskFlags = require("../utils/calculateTaskFlag");
 
+const allowedStatuses = ["complete", "inprogress"];
+
 const createTask = async (req, res) => {
   try {
-    const { title, description, dueDate } = req.body;
+    const { title, description, dueDate, status } = req.body;
 
     if (!title || !description || !dueDate) {
       return res.status(400).json({
         status: "error",
-        message: "All fields are required",
+        message: "All fields except status are required",
+      });
+    }
+
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        status: "error",
+        message: `Invalid status. Allowed values are ${allowedStatuses.join(
+          ", "
+        )}`,
       });
     }
 
     const creator = req.user.id;
-
     const { isOverdue, dueSoon } = calculateTaskFlags(dueDate);
 
     const task = new Task({
@@ -23,7 +33,9 @@ const createTask = async (req, res) => {
       creator,
       isOverdue,
       dueSoon,
+      status,
     });
+
     await task.save();
 
     res.status(201).json({
@@ -89,13 +101,28 @@ const getTaskById = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const { title, description, dueDate } = req.body;
+    const { title, description, dueDate, status } = req.body;
+
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        status: "error",
+        message: `Invalid status. Allowed values are ${allowedStatuses.join(
+          ", "
+        )}`,
+      });
+    }
 
     const { isOverdue, dueSoon } = calculateTaskFlags(dueDate);
 
+    const updateData = { title, description, dueDate, isOverdue, dueSoon };
+
+    if (status) {
+      updateData.status = status;
+    }
+
     const task = await Task.findOneAndUpdate(
       { _id: req.params.id, creator: req.user.id },
-      { title, description, dueDate, isOverdue, dueSoon },
+      updateData,
       { new: true, runValidators: true }
     );
 
