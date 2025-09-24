@@ -34,6 +34,23 @@ const loginController = async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    const refreshToken = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        roles: user.roles,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
     // Send response
     res.status(200).json({
       status: "success",

@@ -24,7 +24,7 @@ module.exports = (io) => {
       // If any tasks were updated, notify clients
       if (dueSoonTasks.modifiedCount || overdueTasks.modifiedCount) {
         const updatedTasks = await Task.find();
-        io.emit("taskUpdate", updatedTasks); // 🚀 push to frontend
+        io.emit("taskUpdate", updatedTasks);
         console.log("📢 Sent task updates to clients");
       }
     } catch (err) {
