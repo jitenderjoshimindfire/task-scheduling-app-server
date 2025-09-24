@@ -1,9 +1,8 @@
-// src/jobs/cron/cronJobs.js
 const cron = require("node-cron");
 const Task = require("../../model/taskModel");
 
 module.exports = (io) => {
-  // Run every hour
+  // Run every hour at minute 0
   cron.schedule("0 * * * *", async () => {
      console.log("Cron job triggered");
     const now = new Date();
@@ -16,13 +15,13 @@ module.exports = (io) => {
         { $set: { dueSoon: true } }
       );
 
-      // Mark overdue tasks
+      // Mark overdue tasks that are not already marked
       const overdueTasks = await Task.updateMany(
         { dueDate: { $lt: now }, isOverdue: false },
         { $set: { isOverdue: true, dueSoon: false } }
       );
 
-      // If any tasks were updated, notify clients
+      // If any tasks were updated, notify clients the updated task values
       if (dueSoonTasks.modifiedCount || overdueTasks.modifiedCount) {
         const updatedTasks = await Task.find();
         io.emit("taskUpdate", updatedTasks);

@@ -11,7 +11,7 @@ const protectedRoutes = require('../middleware/protectedRoutes')
 
 const router = express.Router();
 
-router.use(protectedRoutes)
+router.use(protectedRoutes)  //protected routes for signed in users
 
 router.post("/tasks", createTask);
 
